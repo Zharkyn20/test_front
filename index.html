@@ -229,130 +229,13 @@
       <ul id="task-list"></ul>
   </main>
 
+  <script src="./todo.js"></script>
   <script>
-    const form = document.getElementById('todo-form');
-    const input = document.getElementById('task-input');
-    const list = document.getElementById('task-list');
-    const totalCount = document.getElementById('total-count');
-    const completedCount = document.getElementById('completed-count');
-    const filterButtons = document.querySelectorAll('.filter-button');
-    let activeFilter = 'all';
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const text = input.value.trim();
-      if (!text) {
-        return;
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.todoApp && typeof window.todoApp.initTodoApp === 'function') {
+        window.todoApp.initTodoApp();
       }
-      addTask(text);
-      input.value = '';
-      input.focus();
     });
-
-    function addTask(text) {
-      const item = document.createElement('li');
-      item.className = 'task-item';
-
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.className = 'task-toggle';
-      checkbox.setAttribute('aria-label', 'Отметить задачу как выполненную');
-
-      const title = document.createElement('span');
-      title.className = 'task-title';
-      title.textContent = text;
-
-      const removeButton = document.createElement('button');
-      removeButton.type = 'button';
-      removeButton.textContent = 'Удалить';
-      removeButton.addEventListener('click', () => {
-        if (item.classList.contains('removing')) {
-          return;
-        }
-
-        item.classList.add('removing');
-        removeButton.disabled = true;
-
-        let isRemoved = false;
-        const finalizeRemoval = () => {
-          if (isRemoved || !list.contains(item)) {
-            return;
-          }
-          isRemoved = true;
-          list.removeChild(item);
-          updateCounters();
-          applyFilter();
-        };
-
-        item.addEventListener('transitionend', function handleTransition(event) {
-          if (event.target !== item || event.propertyName !== 'opacity') {
-            return;
-          }
-          item.removeEventListener('transitionend', handleTransition);
-          finalizeRemoval();
-        });
-
-        setTimeout(finalizeRemoval, 400);
-      });
-
-      checkbox.addEventListener('change', () => {
-        item.classList.toggle('completed', checkbox.checked);
-        updateCounters();
-        applyFilter();
-      });
-
-      item.append(checkbox, title, removeButton);
-      list.appendChild(item);
-      updateCounters();
-      applyFilter();
-    }
-
-    filterButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const { filter } = button.dataset;
-        if (filter === activeFilter) {
-          return;
-        }
-        setActiveFilter(filter);
-      });
-    });
-
-    function setActiveFilter(filter) {
-      activeFilter = filter;
-      filterButtons.forEach((button) => {
-        button.classList.toggle('active', button.dataset.filter === filter);
-      });
-      applyFilter();
-    }
-
-    function updateCounters() {
-      const items = Array.from(list.children);
-      const total = items.length;
-      const completed = items.filter((task) => task.classList.contains('completed')).length;
-      totalCount.textContent = total;
-      completedCount.textContent = completed;
-    }
-
-    function applyFilter() {
-      const items = Array.from(list.children);
-      items.forEach((item) => {
-        if (item.classList.contains('removing')) {
-          item.style.display = '';
-          return;
-        }
-
-        const isCompleted = item.classList.contains('completed');
-        const shouldShow =
-          activeFilter === 'all' ||
-          (activeFilter === 'active' && !isCompleted) ||
-          (activeFilter === 'completed' && isCompleted);
-
-        item.style.display = shouldShow ? '' : 'none';
-      });
-    }
-
-    updateCounters();
-    applyFilter();
   </script>
 </body>
 </html>
