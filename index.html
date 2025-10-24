@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Список задач</title>
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #1f2933;
+      line-height: 1.5;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem 1rem;
+      background: radial-gradient(circle at top, #f8fbff 0%, #eef2f7 45%, #e2e8f0 100%);
+    }
+
+    .container {
+      width: min(92vw, 440px);
+      padding: 2.5rem 2rem;
+      border-radius: 18px;
+      background-color: #ffffff;
+      box-shadow:
+        0 30px 60px rgba(88, 106, 137, 0.18),
+        0 4px 18px rgba(99, 101, 241, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 1.75rem;
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.85rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 1rem;
+      background-color: #f9fafb;
+      transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      background-color: #ffffff;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.85rem 1.4rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: #ffffff;
+      cursor: pointer;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      box-shadow: 0 12px 25px rgba(99, 102, 241, 0.28);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 18px 30px rgba(99, 102, 241, 0.32);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .task-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 14px;
+      background: rgba(241, 245, 249, 0.75);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      transition: opacity 0.28s ease, transform 0.28s ease, filter 0.28s ease;
+      will-change: opacity, transform;
+    }
+
+    .task-toggle {
+      width: 1.05rem;
+      height: 1.05rem;
+      accent-color: #6366f1;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .task-toggle:active {
+      transform: scale(0.94);
+    }
+
+    .task-title {
+      min-width: 0;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    .task-item button {
+      padding: 0.6rem 1.05rem;
+      font-size: 0.85rem;
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      box-shadow: 0 12px 22px rgba(239, 68, 68, 0.28);
+    }
+
+    .task-item button:hover {
+      filter: brightness(1.07);
+      box-shadow: 0 16px 26px rgba(239, 68, 68, 0.32);
+    }
+
+    .task-item.completed {
+      background: rgba(226, 232, 240, 0.75);
+    }
+
+    .task-item.completed .task-title {
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+
+    .task-item.removing {
+      opacity: 0;
+      transform: translateY(-12px);
+      filter: blur(1px);
+      pointer-events: none;
+    }
+
+    .top-bar {
+      display: grid;
+      gap: 1.2rem;
+      margin-bottom: 2.15rem;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #4c5264;
+    }
+
+    .stats .highlight {
+      color: #6366f1;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .filter-button {
+      color: #4f46e5;
+      background: rgba(99, 102, 241, 0.12);
+      box-shadow: none;
+      padding-inline: 1.15rem;
+    }
+
+    .filter-button:hover {
+      filter: none;
+      background: rgba(99, 102, 241, 0.18);
+      box-shadow: none;
+    }
+
+    .filter-button:active {
+      transform: translateY(1px);
+    }
+
+    .filter-button.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      box-shadow: 0 12px 25px rgba(99, 102, 241, 0.24);
+    }
+  </style>
+</head>
+  <body>
+    <main class="container">
+      <h1>Список задач</h1>
+      <section class="top-bar">
+        <p class="stats" aria-live="polite">
+          Всего: <span class="highlight" id="total-count">0</span>
+          <span aria-hidden="true">•</span>
+          Выполнено: <span class="highlight" id="completed-count">0</span>
+        </p>
+        <div class="filters" role="group" aria-label="Фильтр задач">
+          <button type="button" class="filter-button active" data-filter="all">Показать все</button>
+          <button type="button" class="filter-button" data-filter="active">Показать активные</button>
+          <button type="button" class="filter-button" data-filter="completed">Показать выполненные</button>
+        </div>
+      </section>
+      <form id="todo-form">
+        <input type="text" id="task-input" placeholder="Введите задачу" required>
+        <button type="submit">Добавить</button>
+      </form>
+      <ul id="task-list"></ul>
+  </main>
+
+  <script>
+    const form = document.getElementById('todo-form');
+    const input = document.getElementById('task-input');
+    const list = document.getElementById('task-list');
+    const totalCount = document.getElementById('total-count');
+    const completedCount = document.getElementById('completed-count');
+    const filterButtons = document.querySelectorAll('.filter-button');
+    let activeFilter = 'all';
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) {
+        return;
+      }
+      addTask(text);
+      input.value = '';
+      input.focus();
+    });
+
+    function addTask(text) {
+      const item = document.createElement('li');
+      item.className = 'task-item';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'task-toggle';
+      checkbox.setAttribute('aria-label', 'Отметить задачу как выполненную');
+
+      const title = document.createElement('span');
+      title.className = 'task-title';
+      title.textContent = text;
+
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.textContent = 'Удалить';
+      removeButton.addEventListener('click', () => {
+        if (item.classList.contains('removing')) {
+          return;
+        }
+
+        item.classList.add('removing');
+        removeButton.disabled = true;
+
+        let isRemoved = false;
+        const finalizeRemoval = () => {
+          if (isRemoved || !list.contains(item)) {
+            return;
+          }
+          isRemoved = true;
+          list.removeChild(item);
+          updateCounters();
+          applyFilter();
+        };
+
+        item.addEventListener('transitionend', function handleTransition(event) {
+          if (event.target !== item || event.propertyName !== 'opacity') {
+            return;
+          }
+          item.removeEventListener('transitionend', handleTransition);
+          finalizeRemoval();
+        });
+
+        setTimeout(finalizeRemoval, 400);
+      });
+
+      checkbox.addEventListener('change', () => {
+        item.classList.toggle('completed', checkbox.checked);
+        updateCounters();
+        applyFilter();
+      });
+
+      item.append(checkbox, title, removeButton);
+      list.appendChild(item);
+      updateCounters();
+      applyFilter();
+    }
+
+    filterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const { filter } = button.dataset;
+        if (filter === activeFilter) {
+          return;
+        }
+        setActiveFilter(filter);
+      });
+    });
+
+    function setActiveFilter(filter) {
+      activeFilter = filter;
+      filterButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.filter === filter);
+      });
+      applyFilter();
+    }
+
+    function updateCounters() {
+      const items = Array.from(list.children);
+      const total = items.length;
+      const completed = items.filter((task) => task.classList.contains('completed')).length;
+      totalCount.textContent = total;
+      completedCount.textContent = completed;
+    }
+
+    function applyFilter() {
+      const items = Array.from(list.children);
+      items.forEach((item) => {
+        if (item.classList.contains('removing')) {
+          item.style.display = '';
+          return;
+        }
+
+        const isCompleted = item.classList.contains('completed');
+        const shouldShow =
+          activeFilter === 'all' ||
+          (activeFilter === 'active' && !isCompleted) ||
+          (activeFilter === 'completed' && isCompleted);
+
+        item.style.display = shouldShow ? '' : 'none';
+      });
+    }
+
+    updateCounters();
+    applyFilter();
+  </script>
+</body>
+</html>
